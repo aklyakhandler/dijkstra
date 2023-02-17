@@ -48,14 +48,14 @@ public class DijkstraGraphSearch {
                 Node nextNode = getByName(nextNodeName);
 
                 double distanceFromNextToCurrent = getDistanceSquared(currentNode, nextNode);
-                double distanceFromStartToCurrent = distanceFromNextToCurrent + distanceToFirst.get(currentNode);
+                double distanceFromStartToNext = distanceFromNextToCurrent + distanceToFirst.get(currentNode);
 
                 if (distanceToFirst.containsKey(nextNode)) {
-                    if (distanceToFirst.get(nextNode) > distanceFromStartToCurrent) {
-                        distanceToFirst.put(nextNode, distanceFromStartToCurrent);
+                    if (distanceToFirst.get(nextNode) > distanceFromStartToNext) {
+                        distanceToFirst.put(nextNode, distanceFromStartToNext);
                     }
                 } else {
-                    distanceToFirst.put(nextNode, distanceFromStartToCurrent);
+                    distanceToFirst.put(nextNode, distanceFromStartToNext);
                 }
             }
             notVisitedNodes.remove(currentNode);
