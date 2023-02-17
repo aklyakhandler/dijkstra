@@ -3,19 +3,11 @@ package com.akliakhandler.ui;
 import com.akliakhandler.manager.ApplicationManager;
 import com.akliakhandler.model.Node;
 
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.List;
+import java.util.Scanner;
 
 public class ConsoleInterface {
     private final ApplicationManager applicationManager = new ApplicationManager();
-    private final Map<Command, Consumer<String[]>> commandMap = Map.of(
-            Command.HELP, (_ignored -> this.sendHelp()),
-            Command.READ_FILE, verifyArgs(1, strings -> this.readFile(strings[1])),
-            Command.PATH, verifyArgs(2, strings -> this.getPath(strings[1], strings[2])),
-            Command.EXIT, (_ignored -> this.exit())
-    );
 
     public void loadApplication() {
         System.out.println("This is an implementation of Dijkstra search algorithm.");
@@ -34,72 +26,48 @@ public class ConsoleInterface {
 
     private void parseCommand(String commandNameWithArgs) {
         String[] strings = commandNameWithArgs.split(" ");
-        Command command = Command.parseName(strings[0]);
-        commandMap.get(command).accept(strings);
-    }
-
-    private Consumer<String[]> verifyArgs(int requiredArgs, Consumer<String[]> consumer) {
-        return strings -> {
-            if (strings.length == requiredArgs + 1) {
-                consumer.accept(strings);
-            } else {
-                System.out.println("Argument count mismatch");
-                sendHelp();
-            }
-        };
+        String command = strings[0];
+        if (command.equalsIgnoreCase("help")) {
+            sendHelp();
+        } else if (command.equalsIgnoreCase("read_file")) {
+            readFile(strings[1]);
+        } else if (command.equalsIgnoreCase("path")) {
+            getPath(strings[1], strings[2]);
+        } else if (command.equalsIgnoreCase("exit")) {
+            exit();
+        } else {
+            System.out.println("Command unknown");
+            sendHelp();
+        }
     }
 
     private void sendHelp() {
         System.out.println("Commands:");
-        for (Command command : Command.values()) {
-            System.out.printf("\t• %s - %s\n", Stream.concat(Stream.of(command.name().toLowerCase()), command.arguments.stream().map(s -> "<" + s + ">"))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.joining(" ")), command.description);
-        }
+        System.out.println("•help");
+        System.out.println("•read_file <file>");
+        System.out.println("•path <a> <b>");
+        System.out.println("•exit");
     }
 
     private void readFile(String fileName) {
-        try {
-            applicationManager.readFile(fileName);
-            System.out.println("File was read.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        applicationManager.readFile(fileName);
+        System.out.println("File was read.");
     }
 
     private void getPath(String nodeA, String nodeB) {
-        try {
-            List<Node> path = applicationManager.getPath(nodeA, nodeB);
-            System.out.println(path.stream()
-                    .map(node -> String.format("%s (%s, %s)", node.getName(), node.getX(), node.getY())).collect(Collectors.joining(" -> ")));
-            System.out.printf("Total distance: %s\n", applicationManager.evaluateDistance(path));
-        } catch (RuntimeException e) {
-            System.out.printf("Exception raised while getting path: %s\n", e.getMessage());
+        List<Node> path = applicationManager.getPath(nodeA, nodeB);
+        for (int i = 0; i < path.size(); i++) {
+            Node node = path.get(i);
+            System.out.print(node.getName() + " (" + node.getX() + ", " + node.getY() + ")");
+            if (i < path.size() - 1) {
+                System.out.print(" -> ");
+            }
         }
+        System.out.printf("\nTotal distance: %s\n", applicationManager.evaluateDistance(path));
     }
 
     private void exit() {
         System.exit(0);
-    }
-
-    enum Command {
-        HELP(null, "shows this message"),
-        READ_FILE(List.of("file"), "reads file for further processing"),
-        PATH(List.of("nodeA", "nodeB"), "finds shortest path between nodeA and nodeB (file data used as source)"),
-        EXIT(null, "stops application");
-        final List<String> arguments = new ArrayList<>();
-        final String description;
-
-        Command(List<String> arguments, String description) {
-            if (arguments != null) this.arguments.addAll(arguments);
-            this.description = description;
-        }
-
-        static Command parseName(String commandName) {
-            return Stream.of(Command.values()).filter(command -> command.name().equalsIgnoreCase(commandName))
-                    .findFirst()
-                    .orElseThrow(IllegalArgumentException::new);
-        }
     }
 }
 
