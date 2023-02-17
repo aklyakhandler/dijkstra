@@ -39,16 +39,7 @@ public class ApplicationManager {
     }
 
     public Double evaluateDistance(List<Node> nodes) {
-        Double result = 0.;
-        if (nodes.size() > 1) {
-            for (int i = 1; i < nodes.size(); i++) {
-                Node right = nodes.get(i);
-                Node left = nodes.get(i - 1);
-                //euclidean distance
-                result += Math.pow(Math.pow(right.getX() - left.getX(), 2) + Math.pow(right.getY() - left.getY(), 2), 0.5);
-            }
-        }
-        return result;
+        return dijkstraGraphSearch.evaluateDistance(nodes);
     }
 
 }
