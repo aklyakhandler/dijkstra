@@ -29,11 +29,13 @@ public class DijkstraGraphSearch {
     }
 
     private Node getNextClosestNode(Map<Node, Double> distancesToStartNode, Node currentNode) {
-        return currentNode.getAdjacentNodesNames().stream()
-                .map(this::getByName)
-                .filter(node -> distancesToStartNode.get(currentNode) - getDistanceSquared(currentNode, node) == distancesToStartNode.get(node))
-                .findFirst()
-                .orElseThrow();
+        for (String ajdNodeName : currentNode.getAdjacentNodesNames()) {
+            Node adjNode = getByName(ajdNodeName);
+            if (distancesToStartNode.get(currentNode) - getDistanceSquared(currentNode, adjNode) == distancesToStartNode.get(adjNode)) {
+                return adjNode;
+            }
+        }
+        return null;
     }
 
     protected Map<Node, Double> findDistancesToStartNode(String firstNode) {
@@ -59,17 +61,32 @@ public class DijkstraGraphSearch {
                 }
             }
             notVisitedNodes.remove(currentNode);
-            currentNode = notVisitedNodes.stream()
-                    .min(Comparator.comparing(node -> distanceToFirst.getOrDefault(node, Double.MAX_VALUE)))
-                    .orElse(null);
+            Node notVisitedNodeWithMinDistance = null;
+            for (Node notVisitedNode : notVisitedNodes) {
+                if (notVisitedNodeWithMinDistance == null) {
+                    notVisitedNodeWithMinDistance = notVisitedNode;
+                    continue;
+                }
+
+                double notVisitedNodeDistance = distanceToFirst.getOrDefault(notVisitedNode, Double.MAX_VALUE);
+                double notVisitedNodeWithMinDistanceDistance = distanceToFirst.getOrDefault(notVisitedNodeWithMinDistance, Double.MAX_VALUE);
+
+                if (notVisitedNodeDistance < notVisitedNodeWithMinDistanceDistance) {
+                    notVisitedNodeWithMinDistance = notVisitedNode;
+                }
+            }
+            currentNode = notVisitedNodeWithMinDistance;
         }
         return distanceToFirst;
     }
 
     protected Node getByName(String name) {
-        return nodes.stream()
-                .filter(node -> Objects.equals(node.getName(), name)).findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(String.format("Node with name '%s' not found", name)));
+        for (Node node : nodes) {
+            if (name.equals(node.getName())) {
+                return node;
+            }
+        }
+        return null;
     }
 
     //skip square root for speed since it is monotonic function
