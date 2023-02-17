@@ -39,11 +39,6 @@ public class NodeFileRepository {
                 .replace(",", "")
                 .split(" ");
 
-        if (strings.length < 3) {
-            System.out.printf("Invalid line (expected at least name and 2 coordinates): '%s'%n", nodeLine);
-            return null;
-        }
-
         return new Node(strings[0], Integer.parseInt(strings[1]), Integer.parseInt(strings[2]), Arrays.stream(strings).skip(3).collect(Collectors.toSet()));
     }
 
